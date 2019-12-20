@@ -5,44 +5,75 @@
         <link rel="stylesheet" href="./public/css/spectre.min.css">
         <link rel="stylesheet" href="./public/css/spectre-exp.min.css">
         <link rel="stylesheet" href="./public/css/spectre-icons.min.css">
+        <link rel="stylesheet" href="./public/css/index.css">
         <title>タッチタイピング練習用</title>
     </head>
     <body>
         <div id="app">
-            <div id="info" class="container">
-                <div v-if="!started" class="columns">
+            <div id="logo" class="container">
+                <div class="columns">
                     <div class="column col-12">
                         <figure class="avatar avatar-lg">
                             <img src="public/img/typing_osoi.png" alt="...">
                         </figure>
                         <b class="text-large">タッチタイピング</b>
                     </div>
+                </div>
+            </div>
+
+            <div id="info" v-show="!started" class="container">
+                <div class="columns">
                     <div class="column">
                         <label class="label label-default text-large">問題数: {{ questions.length }} 問</label>
                         <label class="label label-default text-large">制限時間: {{ timeout/1000 }} 秒</label>
                     </div>
                 </div>
-
-                <div v-if="started" class="columns">
-                    <div class="column col-4">残り時間: {{ timeout/1000 - count_time }} 秒</div>
-                    <meter class="meter column col-8" :value="timeout/1000 - count_time" :optimum="timeout/1000*0.9" min="0" :max="timeout/1000" :low="timeout/1000*0.2" :high="timeout/1000*0.6"></meter>
-                </div>
-
-                <div v-if="!loaded" class="loading loading-lg"></div>
-
-                <div v-if="started" class="columns">
-                    <div class="column col-3">
-                        <span class="label label-rounded label-secondary badge" :data-badge="score">問題 {{ idx+1 }}</span>
-                    </div>
-                    <h2 class="column col-12">{{ questions[idx] }}</h2>
-                    <div class="column col-12">
-                        <input ref="answerInput" :disabled="!started" placeholder="解答欄" v-model="answer" @keypress="getKey">
-                    </div>
-                 </div>
-                 <button class="btn btn-success" :disabled="!loaded" @click="start" v-if="!started">スタート</button>
-                 <button class="btn btn-error" :disabled="!started" @click="reset" v-if="started">リセット</button>
-                 <modal :modal="modal" ref="modal" @reset="reset"></modal>
             </div>
+
+            <div id="time_meter" v-show="started" class="container">
+                <div class="columns">
+                    <div class="column">
+                        <label class="label label-default text-large">残り時間: {{ timeout/1000 - count_time }} 秒</label>
+                        <meter class="meter" :value="timeout/1000 - count_time" :optimum="timeout/1000*0.9" min="0" :max="timeout/1000" :low="timeout/1000*0.2" :high="timeout/1000*0.6"></meter>
+                    </div>
+                </div>
+            </div>
+
+            <div v-show="!loaded" class="loading loading-lg"></div>
+
+            <div v-show="started" class="container">
+                <div id="correct" class="columns">
+                    <div class="column col-3 col-mr-auto">
+                        <span class="label label-lg label-primary">問題 {{ idx+1 }}</span>
+                    </div>
+                </div>
+                <div id="question" class="columns">
+                    <div class="column badge" :data-badge="score">
+                        <p class="font-big text-center">{{ questions[idx] }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <p class="font-big text-center">{{ answer }}</p>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div v-show="started" class="column">
+                        <input ref="answerInput" class="col-12" :disabled="!started" placeholder="解答欄" v-model="answer" @keypress="getKey">
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <button class="btn btn-success" :disabled="!loaded" @click="start" v-show="!started">スタート</button>
+                        <button class="btn btn-error" :disabled="!started" @click="reset" v-show="started">リセット</button>
+                    </div>
+                </div>
+            </div>
+
+            <modal :modal="modal" ref="modal" @reset="reset"></modal>
         </div>
         <script src="./public/js/axios.min.js"></script>
         <script src="./public/js/vue.min.js"></script>
