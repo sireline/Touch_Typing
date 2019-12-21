@@ -22,7 +22,11 @@ var app = new Vue({
         counter: null,
         ready: false,
         started: false,
-        finished: false
+        finished: false,
+        q_strings: 'abcdefghijklmnopqrstuvwxyz0123456789',
+        c_max: 12,
+        q_max: 10,
+        LOCAL_MODE: true
     },
     created: function() {
         this.getQuestions();
@@ -34,20 +38,40 @@ var app = new Vue({
         }
     },
     methods: {
+        getRandom: function(max) {
+            return Math.floor(Math.random() * Math.floor(max));
+        },
+        getRandomChara: function() {
+            return this.q_strings[this.getRandom(this.q_strings.length-1)];
+        },
         getQuestions: function() {
-            const that = this;
-            axios.get('/cgi-bin/api.py', {
-                baseURL: 'http://localhost:8000/'
-            })
-            .then(function(res) {
-                console.log(res.data.trim().split(','));
-                that.questions = res.data.trim().split(',');
-                that.timeout = that.questions.length * 15 * 1000
-                that.ready = true;
-            })
-            .catch(function(e) {
-                console.log(e);
-            })
+            if(this.LOCAL_MODE) {
+                for(var i=0; i<this.q_max; i++) {
+                    let s = '';
+                    const c_loop = this.getRandom(this.c_max)+1;
+                    for(var j=0; j<c_loop; j++) {
+                        s += this.getRandomChara();
+                    }
+                    this.questions[i] = s;
+                }
+                console.log(this.questions);
+                this.timeout = this.questions.length * 15 * 1000;
+                this.ready = true;
+            } else {
+                const that = this;
+                axios.get('/cgi-bin/api.py', {
+                    baseURL: 'http://localhost:8000/'
+                })
+                .then(function(res) {
+                    console.log(res.data.trim().split(','));
+                    that.questions = res.data.trim().split(',');
+                    that.timeout = that.questions.length * 15 * 1000;
+                    that.ready = true;
+                })
+                .catch(function(e) {
+                    console.log(e);
+                })
+            }
         },
         getKey: function(e) {
             console.log('Event(getKey) hook Called.');
@@ -74,13 +98,16 @@ var app = new Vue({
             }
         },
         accuracy: function() {
-            return this.score / this.questions.length;
+            return this.score / this.questions.length * 100;
         },
         bonas: function() {
             return (this.timeout/1000 - this.count_time) * this.accuracy();
         },
+        point: function() {
+            return this.score * 500 + this.bonas();
+        },
         modalContent: function(msg) {
-            msg += ' 正解率('+this.score+'/'+this.questions.length+'): '+this.accuracy()+'， 得点: ' + this.score * this.bonas();
+            msg += ' 正解率: ' + this.accuracy() + '% ，\n得点: ' + this.point() + '点';
             this.modal.content = msg;
             this.$refs.modal.openModal();
         },
