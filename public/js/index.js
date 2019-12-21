@@ -1,4 +1,4 @@
-var app = new Vue({
+const app = new Vue({
     el: '#app',
     components: {
         'modal': ModalComponent
@@ -13,7 +13,6 @@ var app = new Vue({
             callBack: 'reset'
         },
         questions: [],
-        dataTooltip: '',
         idx: 0,
         answer: '',
         score: 0,
@@ -33,7 +32,6 @@ var app = new Vue({
     },
     computed: {
         loaded: function() {
-            console.log('called loaded.')
             return this.ready;
         }
     },
@@ -46,15 +44,14 @@ var app = new Vue({
         },
         getQuestions: function() {
             if(this.LOCAL_MODE) {
-                for(var i=0; i<this.q_max; i++) {
+                for(let i = 0; i < this.q_max; i++) {
                     let s = '';
                     const c_loop = this.getRandom(this.c_max)+1;
-                    for(var j=0; j<c_loop; j++) {
+                    for(let j = 0; j < c_loop; j++) {
                         s += this.getRandomChara();
                     }
                     this.questions[i] = s;
                 }
-                console.log(this.questions);
                 this.timeout = this.questions.length * 15 * 1000;
                 this.ready = true;
             } else {
@@ -63,7 +60,6 @@ var app = new Vue({
                     baseURL: 'http://localhost:8000/'
                 })
                 .then(function(res) {
-                    console.log(res.data.trim().split(','));
                     that.questions = res.data.trim().split(',');
                     that.timeout = that.questions.length * 15 * 1000;
                     that.ready = true;
@@ -74,11 +70,8 @@ var app = new Vue({
             }
         },
         getKey: function(e) {
-            console.log('Event(getKey) hook Called.');
-            console.dir(e);
             if(this.started) {
-                if(e.key=='Enter') {
-                    console.log('Enter pressed.');
+                if(e.key == 'Enter') {
                     this.compare(e.target.value);
                     if(this.idx < this.questions.length-1) {
                         this.idx += 1;
@@ -88,7 +81,6 @@ var app = new Vue({
                     this.answer = '';
                 } else {
                     this.answer = e.target.value;
-                    console.log(this.answer);
                 }
             }
         },
@@ -112,23 +104,19 @@ var app = new Vue({
             this.$refs.modal.openModal();
         },
         start: function() {
-            console.log('typing start.');
             this.started = true;
             Vue.nextTick(()=>{this.ansFocus()});
             this.counter = setInterval(this.countdown, 1000) || this.counter;
         },
         ansFocus: function() {
-            console.log('focus called.');
             this.$refs.answerInput.focus();
         },
         finish: function() {
-            console.log('game stopped.');
             clearInterval(this.counter);
             this.modalContent('Finish!');
             this.finished = true;
         },
         countdown: function() {
-            console.log('countdown start.');
             if(this.timeout/1000 == this.count_time) {
                 this.timeup();
             } else {
@@ -136,13 +124,11 @@ var app = new Vue({
             }
         },
         timeup: function() {
-            console.log('game timeup.');
             clearInterval(this.counter);
             this.modalContent('Time Up!');
             this.finished = true;
         },
         reset: function() {
-            console.log('typing reset.');
             clearInterval(this.counter);
             this.questions = [];
             this.idx = 0;
